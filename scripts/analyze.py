@@ -23,7 +23,7 @@ PROMPTS_DIR = SKILL_DIR / "prompts"
 SCHEMAS_DIR = SKILL_DIR / "schemas"
 CACHE_DIR = SKILL_DIR / "cache"
 
-# 五层地层配置
+# 六层地层配置
 STRATA_CONFIG = {
     "L1": {
         "name": "制度地层",
@@ -82,6 +82,19 @@ STRATA_CONFIG = {
             "储蓄率 年龄 变化",
             "消费降级 年轻人",
             "躺平 内卷 代际",
+        ],
+    },
+    "L6": {
+        "name": "心灵地层",
+        "description": "分析人的内在世界中正在发生的结构性坍缩——什么情绪被压抑？什么意义叙事崩塌？孤独何时变成流行病？",
+        "keywords": [
+            "心理健康 报告 2026",
+            "孤独 调查 年轻人",
+            "意义感 人生 价值",
+            "身份焦虑 职业认同",
+            "信任度 调查 中国",
+            "情绪经济 消费",
+            "社交媒体 心理影响",
         ],
     },
 }
@@ -233,7 +246,7 @@ def build_daily_scan_instructions(top: int = 3) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="灵魂雷达分析指令生成器")
-    parser.add_argument("--stratum", nargs="+", choices=["L1", "L2", "L3", "L4", "L5"],
+    parser.add_argument("--stratum", nargs="+", choices=["L1", "L2", "L3", "L4", "L5", "L6"],
                         help="分析的地层（可指定多个进行叠加分析）")
     parser.add_argument("--topic", type=str, help="分析主题（可选，如'外卖骑手'、'AI替代'）")
     parser.add_argument("--mode", choices=["single", "daily"], default=None,

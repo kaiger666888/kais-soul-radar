@@ -17,7 +17,7 @@
     },
     "stratum": {
       "type": "string",
-      "enum": ["L1", "L2", "L3", "L4", "L5"],
+      "enum": ["L1", "L2", "L3", "L4", "L5", "L6"],
       "description": "主地层（单层分析时等于 strata_involved[0]，叠加分析时写为 L1+L2 格式）"
     },
     "stratified": {
@@ -26,7 +26,7 @@
     },
     "strata_involved": {
       "type": "array",
-      "items": {"type": "string", "enum": ["L1", "L2", "L3", "L4", "L5"]},
+      "items": {"type": "string", "enum": ["L1", "L2", "L3", "L4", "L5", "L6"]},
       "minItems": 1,
       "maxItems": 5,
       "description": "涉及的地层列表"
@@ -115,6 +115,33 @@
     "narrative_blind_spot": {
       "type": "string",
       "description": "叙事盲区描述（叠加分析时可选）：这个结构性力量造成的、无人关注的困境"
+    },
+    "psychic_landscape": {
+      "type": "object",
+      "description": "心灵景观（L6必填，其他可选）：当外部结构力量作用于内在世界时产生的心理状态描述",
+      "properties": {
+        "dominant_emotion": {
+          "type": "string",
+          "description": "主导情绪（如：伪装的平静、被禁止的愤怒、慢性无力感）"
+        },
+        "meaning_structure": {
+          "type": "string",
+          "description": "当前的意义叙事（人们用什么来说服自己'值得活下去'）"
+        },
+        "forbidden_feeling": {
+          "type": "string",
+          "description": "被压抑的情绪（什么感受在公共空间无法表达）"
+        },
+        "identity_fragmentation": {
+          "type": "string",
+          "description": "身份碎片化描述（当外部角色被剥夺后，'我'还剩什么）"
+        },
+        "collective_symptom": {
+          "type": "string",
+          "description": "集体症候（这个群体共有的心理症状，如'精致地摆烂'）"
+        }
+      },
+      "required": ["dominant_emotion", "meaning_structure", "forbidden_feeling", "identity_fragmentation", "collective_symptom"]
     }
   }
 }
