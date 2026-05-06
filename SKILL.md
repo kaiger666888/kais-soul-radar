@@ -49,7 +49,7 @@ description: "社会结构性叙事挖掘工具，从五层社会地层（制度
 ### 步骤 2：数据采集
 
 <!-- AUTO:自动化区 -->
-运行分析脚本生成搜索关键词，然后用 `web_search` 获取公开数据：
+运行分析脚本生成搜索关键词：
 
 ```bash
 python3 scripts/analyze.py --stratum <L1-L5> [--topic "主题词"]
@@ -60,7 +60,21 @@ python3 scripts/analyze.py --stratum <L1-L5> [--topic "主题词"]
 - 对应的 prompt 模板路径
 - 分析指令（结构化 prompt 供 agent 执行）
 
-然后使用 `web_search` 搜索 3-5 个关键词，获取最新公开数据。
+然后使用 **kais-search skill** 搜索 3-5 个关键词，获取最新公开数据。
+
+**搜索策略**（按优先级）：
+1. **kais-search**：16 引擎聚合（国内7 + 国际9），中文查询自动优先国内引擎（百度/ Bing CN / 360 / 搜狗 / 微信 / 神马），无 API 限制
+2. **web_search**（Brave API）：作为补充，注意 429 限流（每分钟 1 次）
+3. **multi-search-engine**：如果 kais-search 不可用，独立降级（Brave → Exa → 秘塔 → Jina → Bing CN）
+
+**各层搜索平台建议**：
+| 地层 | 推荐引擎 | 搜索关键词方向 |
+|------|---------|--------------|
+| L1 | 微信搜一搜、百度 | 政策文件名 + "解读/影响/争议" |
+| L2 | Google、Bing INT | 英文报告关键词（"future of jobs""automation impact"） |
+| L3 | 国家统计局官网、百度 | "人口普查" + "老龄化/少子化/流动" + 年份 |
+| L4 | 贝壳研究院、百度 | "房价" + "住房/租房/城镇化" + 数据 |
+| L5 | 小红书、知乎、百度 | "代际消费" + "年轻人 父母" + "囤积/断舍离" |
 
 ### 步骤 3：地层分析
 
@@ -73,6 +87,27 @@ python3 scripts/analyze.py --stratum <L1-L5> [--topic "主题词"]
 - 每个故事核必须附带**可验证的数据来源**
 - "不可言说性"(unspeakability) 评分：0-10 分，越高表示该冲突越难在公共空间公开讨论
 - 寻找**结构性公式**：不是"某人做了某事"，而是"某结构力量迫使某类人走向某结局"
+
+### 步骤 3.5：深度分析模式（可选）
+
+<!-- AUGMENT:增强区 -->
+当用户说"深度分析"、"深度挖掘"、"deep"，或单次搜索结果不够深入时，启动 **deep-research skill** 对指定地层做多轮深度研究。
+
+**使用方式**：
+```
+启动 deep-research，参数：
+- 主题：[地层名] + [具体方向，如"灵活就业社保断裂"]
+- 搜索轮次：3
+- 思考深度：deep
+- 聚焦维度：数据验证、反例搜索、历史对比
+```
+
+deep-research 会自动执行 3 轮搜索迭代，生成带引用的结构化报告。将报告作为输入数据填入步骤 3 的分析 prompt。
+
+**适用场景**：
+- 需要跨语言数据（中英文交叉验证）
+- 需要历史纵向对比（如"10年人口变化趋势"）
+- 需要学术论文支撑（deep-research 会搜索 arXiv 等）
 
 ### 步骤 4：多层叠加（可选）
 
@@ -110,7 +145,12 @@ python3 scripts/analyze.py --stratum <L1-L5> [--topic "主题词"]
 ### 步骤 6：每日扫描模式
 
 <!-- AUTO:自动化区 -->
-通过 cron 触发时，读取 `prompts/daily-scan.txt`，对五层地层各搜索 2-3 个关键词，筛选 Top 3 故事核推送到 Telegram。
+通过 cron 触发时，读取 `prompts/daily-scan.txt`，对五层地层各搜索 2-3 个关键词（使用 **kais-search**），筛选 Top 3 故事核推送到 Telegram。
+
+**推荐 cron 配置**：
+- 频率：每日 06:00（早高峰前推送，供一天创作参考）
+- 模式：叠加分析（默认 L1+L3+L5 三层共振）
+- sub-agent 执行，避免阻塞主会话
 
 筛选标准：
 - 不可言说性 ≥ 6
@@ -155,3 +195,11 @@ python3 scripts/analyze.py --stratum <L1-L5> [--topic "主题词"]
 - [通用地层分析 Prompt](prompts/stratum-analysis.txt) — 单层分析模板
 - [多层叠加分析 Prompt](prompts/stratified-merge.txt) — 交叉分析模板
 - [每日扫描 Prompt](prompts/daily-scan.txt) — 定时扫描模板
+
+## 依赖 Skill
+
+| Skill | 用途 | 调用方式 |
+|-------|------|---------|
+| **kais-search** | 数据采集主力（16引擎聚合，无API限制） | 读取 SKILL.md 后直接执行搜索 |
+| **deep-research** | 深度地层分析（多轮搜索迭代+结构化报告） | 读取 SKILL.md 后按参数启动 |
+| **multi-search-engine** | 搜索降级保障（5级降级链） | kais-search 不可用时独立调用 |
